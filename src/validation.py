@@ -9,7 +9,7 @@ from datetime import datetime
 #%%
 # Define the data paths and collect all raw data CSVs
 raw = Path("data/raw")
-save = Path("data/interim")
+save = Path("data/processed")
 all_files = glob.glob(os.path.join(raw, "*.csv"))
 li = []
 # %%
@@ -43,7 +43,8 @@ full_battle_log_df = pd.concat(li, axis=0, ignore_index=True)
 battle_log_df = full_battle_log_df[['team_0_tag','team_0_name','battleTime','gameMode_name','gameMode_id','win','win_streak','loss_streak','team_0_crowns','opponent_0_crowns','team_0_startingTrophies','team_0_trophyChange']]
 
 # Save the processed dataframe to CSV for later use
-battle_log_df.to_csv(f"{save}/test.csv")
+save.parent.mkdir(parents=True, exist_ok=True)
+battle_log_df.to_csv(f"{save}/battle_logs.csv")
 # %%
 # Identify all unique player tags in the dataframe
 tags = battle_log_df['team_0_tag'].unique().tolist()
@@ -56,3 +57,4 @@ for tag in tags:
     plt.xticks(rotation=45, ha="right")
     plt.title(f"{temp_df['team_0_name'].iloc[0]} Ladder Trophies")
     plt.show()
+# %%
