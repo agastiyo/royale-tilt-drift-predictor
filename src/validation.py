@@ -8,6 +8,19 @@ import glob
 import os
 from datetime import datetime
 
+# %%
+
+# Define functions
+def parse_battle_time(x):
+    if isinstance(x, datetime):  # already parsed
+        return x
+    try:
+        # try the strict expected format
+        return datetime.strptime(x, "%Y%m%dT%H%M%S.%fZ")
+    except Exception:
+        # fallback to pandas parser
+        return pd.to_datetime(x, errors='coerce', utc=True)
+
 #%%
 
 # Define the data paths and collect all raw data CSVs
@@ -23,7 +36,7 @@ li2 = []
 for file in all_files:
     df = pd.read_csv(file, index_col=None, header=0)
     # Convert battleTime from string to datetime object
-    df['battleTime'] = pd.to_datetime(df['battleTime'], errors='coerce', utc=True)
+    df['battleTime'] = df['battleTime'].apply(parse_battle_time)
     li1.append(df)
 
 full_battle_log_df = pd.concat(li1, axis=0, ignore_index=True).drop_duplicates().sort_values('battleTime')
