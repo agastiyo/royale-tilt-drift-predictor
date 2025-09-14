@@ -21,12 +21,12 @@ li2 = []
 
 # Combine all files into one df
 for file in all_files:
-    df = pd.read_csv(file, index_col=None, header=0).drop_duplicates()
+    df = pd.read_csv(file, index_col=None, header=0)
     # Convert battleTime from string to datetime object
-    df['battleTime'] = df['battleTime'].apply(lambda x: datetime.strptime(x, "%Y%m%dT%H%M%S.%fZ"))
+    df['battleTime'] = pd.to_datetime(df['battleTime'], errors='coerce', utc=True)
     li1.append(df)
 
-full_battle_log_df = pd.concat(li1, axis=0, ignore_index=True)
+full_battle_log_df = pd.concat(li1, axis=0, ignore_index=True).drop_duplicates().sort_values('battleTime')
 
 #%%
 
