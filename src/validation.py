@@ -24,6 +24,7 @@ def parse_battle_time(x):
 #%%
 
 # Define the data paths and collect all raw data CSVs
+# Make sure to create these directories if you dont already have them
 raw = Path("data/raw")
 save = Path("data/processed")
 all_files = glob.glob(os.path.join(raw, "*.csv"))
@@ -39,7 +40,8 @@ for file in all_files:
     df['battleTime'] = df['battleTime'].apply(parse_battle_time)
     li1.append(df)
 
-full_battle_log_df = pd.concat(li1, axis=0, ignore_index=True).drop_duplicates().sort_values('battleTime')
+
+full_battle_log_df = pd.concat(li1, axis=0, ignore_index=True).drop_duplicates().sort_values('battleTime') # Drop duplicates and sort rows by timestamp here to avoid issues with calculating streaks later on
 
 #%%
 

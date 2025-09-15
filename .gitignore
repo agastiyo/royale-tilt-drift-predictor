@@ -1,1 +1,4 @@
 .DS_Store
+
+# Hide player data collected from supercell
+data/
