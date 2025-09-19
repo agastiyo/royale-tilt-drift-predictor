@@ -50,15 +50,13 @@ battle_log_df = full_battle_log_df[['team_0_tag','team_0_name','battleTime','gam
 
 # %%
 
-# Identify all unique player tags in the dataframe
-unique_tags = battle_log_df['team_0_tag'].unique().tolist()
+# Create player tag to name dictionary
+tag_to_name = battle_log_df.drop_duplicates('team_0_tag').set_index("team_0_tag")['team_0_name'].to_dict()
 
 # %%
 
 # Detect wins and streaks for each player individually and add back to the df
-for tag in unique_tags:
-    individual_df = battle_log_df.where(battle_log_df['team_0_tag'] == tag).dropna()
-    
+for tag,individual_df in battle_log_df.groupby('team_0_tag'):
     # Determine if the player won the battle
     individual_df['win'] = individual_df['team_0_crowns'] > individual_df['opponent_0_crowns']
     
@@ -75,6 +73,8 @@ for tag in unique_tags:
 
 battle_log_df = pd.concat(li2, axis=0, ignore_index=True)
 
+# %%
+
 # Save the processed dataframe to CSV for later use
 save.parent.mkdir(parents=True, exist_ok=True)
 battle_log_df.to_csv(f"{save}/battle_log.csv")
@@ -82,12 +82,22 @@ battle_log_df.to_csv(f"{save}/battle_log.csv")
 # %%
 
 # Plot trophy progression over time on the ladder for each player
-for tag in unique_tags:
-    temp_df = battle_log_df.where(battle_log_df['team_0_tag'] == tag).where(battle_log_df['gameMode_name'] == 'Ladder').dropna()
+for tag,temp_df in battle_log_df.where(battle_log_df['gameMode_name'] == 'Ladder').groupby('team_0_tag'):
+    name = tag_to_name.get(tag, f"Tag: {tag}")
     plt.plot(temp_df['battleTime'], temp_df['team_0_startingTrophies'].interpolate())
     
     plt.xticks(rotation=45, ha="right")
-    plt.title(f"{temp_df['team_0_name'].iloc[0]} Ladder Trophies")
+    plt.title(f"{name} Ladder Trophies")
     plt.show()
 
+# %%
+
+# Plot trophy progression over time on the ladder for all players
+for tag,temp_df in battle_log_df.where(battle_log_df['gameMode_name'] == 'Ladder').groupby('team_0_tag'):
+    name = tag_to_name.get(tag, f"Tag: {tag}")
+    plt.plot(temp_df['battleTime'], temp_df['team_0_startingTrophies'].interpolate(), label=name)
+    plt.xticks(rotation=45, ha="right")
+
+plt.legend()
+plt.show()
 # %%
