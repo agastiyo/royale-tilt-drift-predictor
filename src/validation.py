@@ -1,6 +1,5 @@
 #%%
 
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -60,14 +59,12 @@ for tag,individual_df in battle_log_df.groupby('team_0_tag'):
     # Determine if the player won the battle
     individual_df['win'] = individual_df['team_0_crowns'] > individual_df['opponent_0_crowns']
     
-    # Determine player win and loss streaks from the bottom of the set
+    # Determine player win and loss streaks
     groups = (individual_df["win"] != individual_df["win"].shift()).cumsum()
-    streak_up = individual_df.groupby(groups).cumcount() + 1
-    group_sizes = individual_df.groupby(groups)["win"].transform("size")
-    streak_down = group_sizes - streak_up + 1
+    streak = individual_df.groupby(groups).cumcount() + 1
     
-    individual_df["win_streak"] = streak_down.where(individual_df["win"], 0)
-    individual_df["loss_streak"] = streak_down.where(~individual_df["win"], 0)
+    individual_df["win_streak"] = streak.where(individual_df["win"], 0)
+    individual_df["loss_streak"] = streak.where(~individual_df["win"], 0)
     
     li2.append(individual_df)
 
