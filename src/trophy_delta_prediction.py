@@ -57,13 +57,13 @@ axs[0,1].grid(True,linestyle="--")
 axs[1,0].hist(ladder_df.loc[(ladder_df['is_sub10k']) & (ladder_df['win']), 'team_0_trophyChange'], bins=20)
 axs[1,0].set_title("Sub 10k Win Deltas")
 
-axs[1,1].hist(ladder_df.loc[(~ladder_df['is_sub10k']) & (ladder_df['win']), 'team_0_trophyChange'], bins=20)
+axs[1,1].hist(ladder_df.loc[(~ladder_df['is_sub10k']) & (ladder_df['win']), 'team_0_trophyChange'], bins=3)
 axs[1,1].set_title("10k+ Win Deltas")
 
 axs[2,0].hist(ladder_df.loc[(ladder_df['is_sub10k']) & (~ladder_df['win']), 'team_0_trophyChange'], bins=20)
 axs[2,0].set_title("Sub 10k Loss Deltas")
 
-axs[2,1].hist(ladder_df.loc[(~ladder_df['is_sub10k']) & (~ladder_df['win']), 'team_0_trophyChange'], bins=20)
+axs[2,1].hist(ladder_df.loc[(~ladder_df['is_sub10k']) & (~ladder_df['win']), 'team_0_trophyChange'], bins=3)
 axs[2,1].set_title("10k+ Loss Deltas")
 
 plt.tight_layout()
