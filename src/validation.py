@@ -85,6 +85,7 @@ for tag,temp_df in battle_log_df.where(battle_log_df['gameMode_name'] == 'Ladder
     
     plt.xticks(rotation=45, ha="right")
     plt.title(f"{name} Ladder Trophies")
+    plt.grid()
     plt.show()
 
 # %%
@@ -96,5 +97,6 @@ for tag,temp_df in battle_log_df.where(battle_log_df['gameMode_name'] == 'Ladder
     plt.xticks(rotation=45, ha="right")
 
 plt.legend()
+plt.grid()
 plt.show()
 # %%
