@@ -5,6 +5,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
+from astropy.stats import sigma_clip
 
 #%%
 
@@ -57,15 +58,73 @@ axs[0,1].grid(True,linestyle="--")
 axs[1,0].hist(ladder_df.loc[(ladder_df['is_sub10k']) & (ladder_df['win']), 'team_0_trophyChange'], bins=20)
 axs[1,0].set_title("Sub 10k Win Deltas")
 
-axs[1,1].hist(ladder_df.loc[(~ladder_df['is_sub10k']) & (ladder_df['win']), 'team_0_trophyChange'], bins=5)
+axs[1,1].hist(ladder_df.loc[(~ladder_df['is_sub10k']) & (ladder_df['win']), 'team_0_trophyChange'], bins=20)
 axs[1,1].set_title("10k+ Win Deltas")
 
 axs[2,0].hist(ladder_df.loc[(ladder_df['is_sub10k']) & (~ladder_df['win']), 'team_0_trophyChange'], bins=20)
 axs[2,0].set_title("Sub 10k Loss Deltas")
 
-axs[2,1].hist(ladder_df.loc[(~ladder_df['is_sub10k']) & (~ladder_df['win']), 'team_0_trophyChange'], bins=5)
+axs[2,1].hist(ladder_df.loc[(~ladder_df['is_sub10k']) & (~ladder_df['win']), 'team_0_trophyChange'], bins=20)
 axs[2,1].set_title("10k+ Loss Deltas")
 
 plt.tight_layout()
 plt.show()
+# %%
+
+clipped_dfs = []
+for (is_sub10k, win), group in ladder_df.groupby(['is_sub10k', 'win']):
+    clipped = sigma_clip(group['team_0_trophyChange'], sigma=3, maxiters=None)
+    clean_group = group[~clipped.mask]
+    clipped_dfs.append(clean_group)
+    
+ladder_df_clipped = pd.concat(clipped_dfs)
+
+delta_stats_clipped = ladder_df_clipped.groupby(['is_sub10k', 'win'])['team_0_trophyChange'].agg(['mean','std','count'])
+
+print("Mean trophy deltas (after 3σ clipping)")
+for (is_sub10k, win), row in delta_stats_clipped.iterrows():
+    group = "0-9999" if is_sub10k else "10000+"
+    result = "Win" if win else "Loss"
+    mean_val = row['mean']
+    std_val = row['std']
+    n = row['count']
+    print(f"{group} trophies | {result:4s}: {mean_val:.2f} ± {std_val:.2f} with {n} samples")
+
+fig, axs = plt.subplots(3, 2, figsize=(6, 9))
+x = [0.3,0.7]
+labels = ['Loss','Win']
+
+sub10k = delta_stats_clipped.loc[True]
+post10k = delta_stats_clipped.loc[False]
+
+axs[0,0].errorbar(x,abs(sub10k['mean']),yerr=sub10k['std'],fmt='o')
+axs[0,0].set_xticks(x)
+axs[0,0].set_xlim(0, 1)
+axs[0,0].set_xticklabels(labels)
+axs[0,0].set_title("Sub 10k Trophies")
+axs[0,0].set_ylabel("Absolute Mean Trophy Change")
+axs[0,0].grid(True,linestyle="--")
+
+axs[0,1].errorbar(x,abs(post10k['mean']),yerr=post10k['std'],fmt='o')
+axs[0,1].set_xticks(x)
+axs[0,1].set_xlim(0, 1)
+axs[0,1].set_xticklabels(labels)
+axs[0,1].set_title("10k+ Trophies")
+axs[0,1].grid(True,linestyle="--")
+
+axs[1,0].hist(ladder_df_clipped.loc[(ladder_df_clipped['is_sub10k']) & (ladder_df_clipped['win']), 'team_0_trophyChange'], bins=7)
+axs[1,0].set_title("Sub 10k Win Deltas")
+
+axs[1,1].hist(ladder_df_clipped.loc[(~ladder_df_clipped['is_sub10k']) & (ladder_df_clipped['win']), 'team_0_trophyChange'], bins=7)
+axs[1,1].set_title("10k+ Win Deltas")
+
+axs[2,0].hist(ladder_df_clipped.loc[(ladder_df_clipped['is_sub10k']) & (~ladder_df_clipped['win']), 'team_0_trophyChange'], bins=7)
+axs[2,0].set_title("Sub 10k Loss Deltas")
+
+axs[2,1].hist(ladder_df_clipped.loc[(~ladder_df_clipped['is_sub10k']) & (~ladder_df_clipped['win']), 'team_0_trophyChange'], bins=7)
+axs[2,1].set_title("10k+ Loss Deltas")
+
+plt.tight_layout()
+plt.show()
+
 # %%
